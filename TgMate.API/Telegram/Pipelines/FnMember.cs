@@ -10,6 +10,7 @@ namespace TgMate.API.Telegram.Pipelines;
 [JsonDerivedType(typeof(Int), nameof(Int))]
 [JsonDerivedType(typeof(Bool), nameof(Bool))]
 [JsonDerivedType(typeof(Fn), nameof(Fn))]
+[JsonDerivedType(typeof(UnitReference), nameof(UnitReference))]
 public class FnMember;
 
 [JsonSerializable(typeof(List<FnMember>))]
