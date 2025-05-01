@@ -5,6 +5,7 @@ public class Unit
   public Guid Id { get; set; }
   public required string Key { get; set; }
   public required DateTimeOffset CreatedAt { get; set; }
+  public required UnitStatus Status { get; set; }
 
   public required Fn Fn { get; set; }
   public List<FnMember> Input { get; set; } = [];
