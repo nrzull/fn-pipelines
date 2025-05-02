@@ -38,13 +38,4 @@ public class CustomWebApplicationFactory(string connectionString) : WebApplicati
       }
     });
   }
-
-  public async Task ApplyMigrations()
-  {
-    await using var scope = Services.CreateAsyncScope();
-
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    await dbContext.Database.EnsureCreatedAsync();
-  }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Testcontainers.PostgreSql;
 
@@ -19,8 +20,22 @@ public class CustomLifetime(string name) : IAsyncLifetime
   {
     await Db.StartAsync();
     App = new CustomWebApplicationFactory(Db.GetConnectionString());
-    await App.ApplyMigrations();
+    await WithScope(
+      async (_scope, dbContext) =>
+      {
+        await dbContext.Database.EnsureCreatedAsync();
+      }
+    );
   }
 
   public Task DisposeAsync() => Db.DisposeAsync().AsTask();
+
+  public async Task WithScope(Func<AsyncServiceScope, ApplicationDbContext, Task> cb)
+  {
+    await using var scope = App!.Services.CreateAsyncScope();
+
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    await cb(scope, dbContext);
+  }
 }
