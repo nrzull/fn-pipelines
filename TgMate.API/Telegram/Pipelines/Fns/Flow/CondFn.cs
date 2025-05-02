@@ -8,7 +8,8 @@ public class CondFn : Fn
     Input switch
     {
       [Fn { } fn, Fn { } trueFn, Fn { } falseFn] => await Handle(fn, trueFn, falseFn),
-      _ => throw new Exception("expect fn, true clause and false clause"),
+      [Bool { } b, Fn { } trueFn, Fn { } falseFn] => await Handle(b, trueFn, falseFn),
+      _ => throw new FnMembersException(Input),
     };
 
   async Task<List<FnMember>> Handle(Fn fn, Fn trueFn, Fn falseFn)
@@ -21,5 +22,10 @@ public class CondFn : Fn
     {
       throw new Exception("expect Bool");
     }
+  }
+
+  async Task<List<FnMember>> Handle(Bool b, Fn trueFn, Fn falseFn)
+  {
+    return b.Value ? await trueFn.Run() : await falseFn.Run();
   }
 }

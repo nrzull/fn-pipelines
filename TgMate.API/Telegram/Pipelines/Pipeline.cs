@@ -6,7 +6,6 @@ public class Pipeline
 
   public required DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ScheduledAt { get; set; }
-  public DateTimeOffset? CancelledAt { get; set; }
 
   public List<Unit> Units { get; set; } = [];
 }

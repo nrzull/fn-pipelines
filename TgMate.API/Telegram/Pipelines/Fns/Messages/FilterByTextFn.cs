@@ -9,7 +9,7 @@ public class FilterByTextFn : Fn
     {
       [IdAccessHash { } idAccessHash, Str { } str] => await Handle(idAccessHash, str),
       [Message { } msg, Str { } str] => await Handle(msg, str),
-      _ => throw new Exception("invalid args"),
+      _ => throw new FnMembersException(Input),
     };
 
   public Task<List<FnMember>> Handle(Message msg, Str str)

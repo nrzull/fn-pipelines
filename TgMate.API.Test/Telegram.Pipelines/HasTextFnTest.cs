@@ -1,4 +1,5 @@
 using TgMate.API.Telegram;
+using TgMate.API.Telegram.Pipelines;
 using TgMate.API.Telegram.Pipelines.FnMembers;
 using TgMate.API.Telegram.Pipelines.Fns.Messages;
 
@@ -21,8 +22,10 @@ public class HasTextFnTest
   {
     var message = new Message() { Value = new TelegramMessageDTO(Uid: 1, Text: "hello") };
 
-    await Assert.ThrowsAsync<Exception>(new HasTextFn() { Input = [message] }.Run);
+    await Assert.ThrowsAsync<FnMembersException>(new HasTextFn() { Input = [message] }.Run);
 
-    await Assert.ThrowsAsync<Exception>(new HasTextFn() { Input = [message, new Bool()] }.Run);
+    await Assert.ThrowsAsync<FnMembersException>(
+      new HasTextFn() { Input = [message, new Bool()] }.Run
+    );
   }
 }

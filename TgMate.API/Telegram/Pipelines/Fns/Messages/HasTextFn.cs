@@ -8,7 +8,7 @@ public class HasTextFn : Fn
     Input switch
     {
       [Message { } msg, Str { } str] => await Handle(msg, str),
-      _ => throw new Exception("invalid args"),
+      _ => throw new FnMembersException(Input),
     };
 
   Task<List<FnMember>> Handle(Message msg, Str str) =>

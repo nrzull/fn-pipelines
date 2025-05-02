@@ -4,15 +4,13 @@ using Testcontainers.PostgreSql;
 
 namespace TgMate.API.Test;
 
-public class CustomLifetime(string name) : IAsyncLifetime
+public class CustomLifetime : IAsyncLifetime
 {
   public CustomWebApplicationFactory? App { get; set; }
 
   PostgreSqlContainer Db { get; set; } =
     new PostgreSqlBuilder()
       .WithImage("postgres:16-alpine")
-      .WithName(name)
-      .WithReuse(true)
       .WithLogger(LoggerFactory.Create(_ => { }).CreateLogger("PostgreSqlBuilder"))
       .Build();
 

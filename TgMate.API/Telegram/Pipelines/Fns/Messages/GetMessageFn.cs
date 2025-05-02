@@ -8,7 +8,7 @@ public class GetMessageFn : Fn
     Input switch
     {
       [IdAccessHash { } idAccessHash] => await Handle(idAccessHash),
-      _ => throw new Exception("invalid args"),
+      _ => throw new FnMembersException(Input),
     };
 
   Task<List<FnMember>> Handle(IdAccessHash idAccessHash)
