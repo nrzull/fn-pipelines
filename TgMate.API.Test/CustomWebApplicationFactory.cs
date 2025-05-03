@@ -18,7 +18,8 @@ public class CustomWebApplicationFactory(string connectionString) : WebApplicati
       {
         var appSettings = new Dictionary<string, string?>
         {
-          { "Logging:LogLevel:Default", LogLevel.Warning.ToString() },
+          { "Logging:LogLevel:Default", LogLevel.Information.ToString() },
+          { "Logging:LogLevel:Microsoft.EntityFrameworkCore", LogLevel.Warning.ToString() },
         };
 
         conf.AddInMemoryCollection(appSettings);

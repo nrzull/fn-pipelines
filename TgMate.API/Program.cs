@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TgMate.API.Extensions;
 using TgMate.API.Telegram.Pipelines;
 
 namespace TgMate.API;
@@ -9,6 +10,7 @@ public class Program
   {
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.UseLogging();
     builder.Services.AddControllers();
     builder.Services.AddScoped<PipelinesContext>();
 

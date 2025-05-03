@@ -1,12 +1,15 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TgMate.API.Telegram.Pipelines.FnMembers;
 
 namespace TgMate.API.Telegram.Pipelines;
 
-public class PipelinesContext(ApplicationDbContext dbContext)
+public class PipelinesContext(ApplicationDbContext dbContext, ILogger<PipelinesContext> logger)
 {
   public async Task<Pipeline> CreatePipeline(List<NewUnitDTO> newUnits)
   {
+    using var activity = Tracing.Source.StartActivity("CreatePipeline");
+
     if (newUnits.Count() == 0)
     {
       throw new Exception("empty units");
@@ -49,6 +52,8 @@ public class PipelinesContext(ApplicationDbContext dbContext)
     dbContext.Add(pipeline);
     dbContext.AddRange(units);
     await dbContext.SaveChangesAsync();
+
+    activity?.SetTag("pipelineId", pipeline.Id);
 
     return pipeline;
   }
@@ -94,6 +99,10 @@ public class PipelinesContext(ApplicationDbContext dbContext)
 
   public async Task ProcessUnit(Guid unitId, Guid pipelineId)
   {
+    using var activity = Tracing.Source.StartActivity($"ProcessUnit");
+    activity?.SetTag("unitId", unitId);
+    activity?.SetTag("pipelineId", pipelineId);
+
     var unit = await GetUnitById(unitId, pipelineId);
     if (unit is null)
     {
@@ -127,21 +136,11 @@ public class PipelinesContext(ApplicationDbContext dbContext)
 
     var nextUnit = await FindNextUnit(unit);
 
-    // Console.WriteLine(
-    //   $"""
-    //   unit key: {unit.Key}
+    logger.Fn(JsonSerializer.Serialize(unit.Fn, FnMemberJsonSerializerContext.Default.Fn));
 
-    //   fn: {JsonSerializer.Serialize(
-    //     unit.Fn,
-    //     FnMemberJsonSerializerContext.Default.Fn
-    //   )}
-
-    //   fn output: {JsonSerializer.Serialize(
-    //     result,
-    //     FnMemberJsonSerializerContext.Default.ListFnMember
-    //   )}
-    //   """
-    // );
+    logger.FnOutput(
+      JsonSerializer.Serialize(result, FnMemberJsonSerializerContext.Default.ListFnMember)
+    );
 
     if (nextUnit is { })
     {
@@ -170,4 +169,13 @@ public class PipelinesContext(ApplicationDbContext dbContext)
 
     return children.FirstOrDefault();
   }
+}
+
+internal static partial class LoggerExtensions
+{
+  [LoggerMessage(LogLevel.Information, "fnOutput {@fnOutput}")]
+  public static partial void FnOutput(this ILogger logger, string fnOutput);
+
+  [LoggerMessage(LogLevel.Information, "fn {@fn}")]
+  public static partial void Fn(this ILogger logger, string fn);
 }
