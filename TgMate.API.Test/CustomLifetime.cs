@@ -22,18 +22,32 @@ public class CustomLifetime : IAsyncLifetime
       async (_scope, dbContext) =>
       {
         await dbContext.Database.EnsureCreatedAsync();
-      }
+      },
+      false
     );
   }
 
   public Task DisposeAsync() => Db.DisposeAsync().AsTask();
 
-  public async Task WithScope(Func<AsyncServiceScope, ApplicationDbContext, Task> cb)
+  public async Task WithScope(
+    Func<AsyncServiceScope, ApplicationDbContext, Task> cb,
+    bool rollback = true
+  )
   {
     await using var scope = App!.Services.CreateAsyncScope();
 
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    await using var tc = await dbContext.Database.BeginTransactionAsync();
     await cb(scope, dbContext);
+
+    if (rollback)
+    {
+      await tc.RollbackAsync();
+    }
+    else
+    {
+      await tc.CommitAsync();
+    }
   }
 }

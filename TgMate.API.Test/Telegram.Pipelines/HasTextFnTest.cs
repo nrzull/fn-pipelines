@@ -10,7 +10,7 @@ public class HasTextFnTest
   [Fact]
   public async Task ShouldHaveHello()
   {
-    var message = new Message() { Value = new TelegramMessageDTO(Uid: 1, Text: "hello") };
+    var message = new Message() { Value = new TgMessageDTO(Uid: 1, Text: "hello") };
 
     var hasTextFn = new HasTextFn() { Input = [message, new Str() { Value = "hello" }] };
 
@@ -20,7 +20,7 @@ public class HasTextFnTest
   [Fact]
   public async Task ShouldThrow()
   {
-    var message = new Message() { Value = new TelegramMessageDTO(Uid: 1, Text: "hello") };
+    var message = new Message() { Value = new TgMessageDTO(Uid: 1, Text: "hello") };
 
     await Assert.ThrowsAsync<FnMembersException>(new HasTextFn() { Input = [message] }.Run);
 

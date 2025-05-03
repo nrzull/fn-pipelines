@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TgMate.API.Telegram;
 using TgMate.API.Telegram.Pipelines;
 using TgMate.API.Telegram.Pipelines.FnMembers;
 using TgMate.API.Telegram.Pipelines.Fns.Flow;
@@ -15,6 +16,9 @@ public class PipelinesContextTest : CustomLifetime
       async (scope, dbContext) =>
       {
         var pipelinesContext = scope.ServiceProvider.GetRequiredService<PipelinesContext>();
+
+        var tgContext = scope.ServiceProvider.GetRequiredService<TgContext>();
+        var tgWorker = await tgContext.EnsureTgWorker(new("phone"));
 
         List<NewUnitDTO> newUnits =
         [
@@ -34,7 +38,7 @@ public class PipelinesContextTest : CustomLifetime
           ),
         ];
 
-        var pipeline = await pipelinesContext.CreatePipeline(newUnits);
+        var pipeline = await pipelinesContext.CreatePipeline(tgWorker, newUnits);
         Assert.True((await pipelinesContext.GetPipelines()).Count() == 1);
         Assert.True(pipeline.Units.Count() == 2);
 
@@ -50,6 +54,9 @@ public class PipelinesContextTest : CustomLifetime
       async (scope, dbContext) =>
       {
         var pipelinesContext = scope.ServiceProvider.GetRequiredService<PipelinesContext>();
+
+        var tgContext = scope.ServiceProvider.GetRequiredService<TgContext>();
+        var tgWorker = await tgContext.EnsureTgWorker(new("phone"));
 
         List<NewUnitDTO> newUnits =
         [
@@ -94,7 +101,7 @@ public class PipelinesContextTest : CustomLifetime
           ),
         ];
 
-        var pipeline = await pipelinesContext.CreatePipeline(newUnits);
+        var pipeline = await pipelinesContext.CreatePipeline(tgWorker, newUnits);
 
         await pipelinesContext.StartPipeline(pipeline.Id);
 

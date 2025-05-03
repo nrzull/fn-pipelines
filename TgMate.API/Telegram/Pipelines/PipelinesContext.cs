@@ -6,7 +6,7 @@ namespace TgMate.API.Telegram.Pipelines;
 
 public class PipelinesContext(ApplicationDbContext dbContext, ILogger<PipelinesContext> logger)
 {
-  public async Task<Pipeline> CreatePipeline(List<NewUnitDTO> newUnits)
+  public async Task<Pipeline> CreatePipeline(TgWorker tgWorker, List<NewUnitDTO> newUnits)
   {
     using var activity = Tracing.Source.StartActivity("CreatePipeline");
 
@@ -15,7 +15,7 @@ public class PipelinesContext(ApplicationDbContext dbContext, ILogger<PipelinesC
       throw new Exception("empty units");
     }
 
-    var pipeline = new Pipeline() { CreatedAt = DateTimeOffset.UtcNow };
+    var pipeline = new Pipeline() { CreatedAt = DateTimeOffset.UtcNow, TgWorker = tgWorker };
 
     var units = newUnits
       .Select(v => new Unit()
@@ -58,14 +58,10 @@ public class PipelinesContext(ApplicationDbContext dbContext, ILogger<PipelinesC
     return pipeline;
   }
 
-  public async Task<List<Pipeline>> GetPipelines() =>
-    await dbContext.TelegramPipelines.ToListAsync();
+  public async Task<List<Pipeline>> GetPipelines() => await dbContext.TgPipelines.ToListAsync();
 
   public async Task<Pipeline?> GetPipeline(Guid id) =>
-    await dbContext
-      .TelegramPipelines.Where(v => v.Id == id)
-      .Include(v => v.Units)
-      .FirstOrDefaultAsync();
+    await dbContext.TgPipelines.Where(v => v.Id == id).Include(v => v.Units).FirstOrDefaultAsync();
 
   public async Task StartPipeline(Guid id)
   {
@@ -82,19 +78,17 @@ public class PipelinesContext(ApplicationDbContext dbContext, ILogger<PipelinesC
 
   public async Task<Unit?> GetUnitById(Guid id, Guid pipelineId) =>
     await dbContext
-      .TelegramPipelineUnits.Where(v => v.Id == id && v.PipelineId == pipelineId)
+      .TgPipelineUnits.Where(v => v.Id == id && v.PipelineId == pipelineId)
       .FirstOrDefaultAsync();
 
   public async Task<Unit?> GetUnitByKey(string key, Guid pipelineId) =>
     await dbContext
-      .TelegramPipelineUnits.Where(v => v.Key == key && v.PipelineId == pipelineId)
+      .TgPipelineUnits.Where(v => v.Key == key && v.PipelineId == pipelineId)
       .FirstOrDefaultAsync();
 
   public async Task<List<Unit>> GetUnitChildren(Unit parent) =>
     await dbContext
-      .TelegramPipelineUnits.Where(v =>
-        v.ParentId == parent.Id && v.PipelineId == parent.PipelineId
-      )
+      .TgPipelineUnits.Where(v => v.ParentId == parent.Id && v.PipelineId == parent.PipelineId)
       .ToListAsync();
 
   public async Task ProcessUnit(Guid unitId, Guid pipelineId)

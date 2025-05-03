@@ -1,14 +1,16 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TgMate.API.Telegram;
 using TgMate.API.Telegram.Pipelines;
 
 namespace TgMate.API;
 
 public class ApplicationDbContext(DbContextOptions options) : DbContext(options)
 {
-  public DbSet<Pipeline> TelegramPipelines { get; set; }
-  public DbSet<Unit> TelegramPipelineUnits { get; set; }
+  public DbSet<Pipeline> TgPipelines { get; set; }
+  public DbSet<Unit> TgPipelineUnits { get; set; }
+  public DbSet<TgWorker> TgWorkers { get; set; }
 
   protected override void OnConfiguring(DbContextOptionsBuilder builder)
   {
@@ -19,6 +21,15 @@ public class ApplicationDbContext(DbContextOptions options) : DbContext(options)
   protected override void OnModelCreating(ModelBuilder builder)
   {
     base.OnModelCreating(builder);
+
+    builder.Entity<Pipeline>(pipeline =>
+    {
+      pipeline
+        .HasOne(v => v.TgWorker)
+        .WithMany(v => v.Pipelines)
+        .HasForeignKey(v => v.TgWorkerId)
+        .HasPrincipalKey(v => v.Id);
+    });
 
     builder.Entity<Unit>(unit =>
     {

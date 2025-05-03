@@ -10,7 +10,7 @@ public class CondFnTest
   [Fact]
   public async Task Check()
   {
-    var message = new Message { Value = new TelegramMessageDTO(Uid: 1, Text: "hello") };
+    var message = new Message { Value = new TgMessageDTO(Uid: 1, Text: "hello") };
 
     {
       var condFn = new CondFn()

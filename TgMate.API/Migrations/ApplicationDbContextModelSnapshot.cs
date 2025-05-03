@@ -37,10 +37,17 @@ namespace TgMate.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("scheduled_at");
 
-                    b.HasKey("Id")
-                        .HasName("pk_telegram_pipelines");
+                    b.Property<Guid>("TgWorkerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tg_worker_id");
 
-                    b.ToTable("telegram_pipelines", (string)null);
+                    b.HasKey("Id")
+                        .HasName("pk_tg_pipelines");
+
+                    b.HasIndex("TgWorkerId")
+                        .HasDatabaseName("ix_tg_pipelines_tg_worker_id");
+
+                    b.ToTable("tg_pipelines", (string)null);
                 });
 
             modelBuilder.Entity("TgMate.API.Telegram.Pipelines.Unit", b =>
@@ -99,18 +106,52 @@ namespace TgMate.API.Migrations
                         .HasColumnName("status");
 
                     b.HasKey("Id")
-                        .HasName("pk_telegram_pipeline_units");
+                        .HasName("pk_tg_pipeline_units");
 
                     b.HasIndex("InputHolderId")
-                        .HasDatabaseName("ix_telegram_pipeline_units_input_holder_id");
+                        .HasDatabaseName("ix_tg_pipeline_units_input_holder_id");
 
                     b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_telegram_pipeline_units_parent_id");
+                        .HasDatabaseName("ix_tg_pipeline_units_parent_id");
 
                     b.HasIndex("PipelineId")
-                        .HasDatabaseName("ix_telegram_pipeline_units_pipeline_id");
+                        .HasDatabaseName("ix_tg_pipeline_units_pipeline_id");
 
-                    b.ToTable("telegram_pipeline_units", (string)null);
+                    b.ToTable("tg_pipeline_units", (string)null);
+                });
+
+            modelBuilder.Entity("TgMate.API.Telegram.TgWorker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tg_workers");
+
+                    b.ToTable("tg_workers", (string)null);
+                });
+
+            modelBuilder.Entity("TgMate.API.Telegram.Pipelines.Pipeline", b =>
+                {
+                    b.HasOne("TgMate.API.Telegram.TgWorker", "TgWorker")
+                        .WithMany("Pipelines")
+                        .HasForeignKey("TgWorkerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tg_pipelines_tg_workers_tg_worker_id");
+
+                    b.Navigation("TgWorker");
                 });
 
             modelBuilder.Entity("TgMate.API.Telegram.Pipelines.Unit", b =>
@@ -118,19 +159,19 @@ namespace TgMate.API.Migrations
                     b.HasOne("TgMate.API.Telegram.Pipelines.Unit", "InputHolder")
                         .WithMany()
                         .HasForeignKey("InputHolderId")
-                        .HasConstraintName("fk_telegram_pipeline_units_telegram_pipeline_units_input_holde");
+                        .HasConstraintName("fk_tg_pipeline_units_tg_pipeline_units_input_holder_id");
 
                     b.HasOne("TgMate.API.Telegram.Pipelines.Unit", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
-                        .HasConstraintName("fk_telegram_pipeline_units_telegram_pipeline_units_parent_id");
+                        .HasConstraintName("fk_tg_pipeline_units_tg_pipeline_units_parent_id");
 
                     b.HasOne("TgMate.API.Telegram.Pipelines.Pipeline", "Pipeline")
                         .WithMany("Units")
                         .HasForeignKey("PipelineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_telegram_pipeline_units_telegram_pipelines_pipeline_id");
+                        .HasConstraintName("fk_tg_pipeline_units_tg_pipelines_pipeline_id");
 
                     b.Navigation("InputHolder");
 
@@ -147,6 +188,11 @@ namespace TgMate.API.Migrations
             modelBuilder.Entity("TgMate.API.Telegram.Pipelines.Unit", b =>
                 {
                     b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("TgMate.API.Telegram.TgWorker", b =>
+                {
+                    b.Navigation("Pipelines");
                 });
 #pragma warning restore 612, 618
         }
