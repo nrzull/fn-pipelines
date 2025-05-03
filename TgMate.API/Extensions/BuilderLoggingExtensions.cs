@@ -11,6 +11,9 @@ public static class BuilderLoggingExtensions
   {
     builder.Logging.AddOpenTelemetry(opts =>
     {
+      opts.IncludeFormattedMessage = true;
+      opts.IncludeScopes = true;
+
       opts.SetResourceBuilder(
           ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName)
         )
