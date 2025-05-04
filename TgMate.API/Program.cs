@@ -3,6 +3,7 @@ using TgMate.API.Auth;
 using TgMate.API.Extensions;
 using TgMate.API.Telegram;
 using TgMate.API.Telegram.Pipelines;
+using TgMate.API.Web.Auth;
 
 namespace TgMate.API;
 
@@ -21,6 +22,24 @@ public class Program
     builder.Services.AddScoped<TgContext>();
     builder.Services.AddScoped<AuthContext>();
 
+    builder.Services.AddCors(options =>
+    {
+      options.AddPolicy(
+        "generic",
+        policy =>
+        {
+          policy
+            .SetIsOriginAllowed(origin => true)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithExposedHeaders("Access-Control-Allow-Origin", "Content-Type");
+        }
+      );
+    });
+
+    builder.UseAuthEndpoints();
+
     builder.WebHost.ConfigureKestrel(opts =>
     {
       opts.ListenLocalhost(int.Parse(Environment.GetEnvironmentVariable("API_WEB_PORT")!));
@@ -34,6 +53,7 @@ public class Program
 
     app.UseHttpsRedirection();
     app.UseAuthorization();
+    app.UseCors("generic");
 
     app.MapControllers();
     app.MapHub<AuthHub>("/authHub");

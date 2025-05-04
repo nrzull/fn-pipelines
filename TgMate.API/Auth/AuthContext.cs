@@ -1,28 +1,11 @@
 using JWT.Algorithms;
 using JWT.Builder;
-using Microsoft.AspNetCore.SignalR;
-using TgMate.API.Core;
 using TgMate.API.Telegram;
 
 namespace TgMate.API.Auth;
 
-public class AuthContext(IHubContext<AuthHub> hub, TgContext tgContext)
+public class AuthContext()
 {
-  public async Task<EncodedAccessToken> Login(Phone phone, string connectionId)
-  {
-    var hubClient = hub.Clients.Client(connectionId);
-    var cts = new CancellationTokenSource();
-
-    var tgWorkerClient = await tgContext.EnsureTgWorkerClient(
-      phone.Value,
-      () => hubClient.InvokeAsync<string?>("Login", cts.Token)
-    );
-
-    var tgWorker = await tgContext.EnsureTgWorker(phone);
-
-    return EncodeAccessToken(tgWorker);
-  }
-
   public EncodedAccessToken EncodeAccessToken(TgWorker tgWorker)
   {
     var expiredAt = DateTimeOffset.UtcNow.AddHours(12);
